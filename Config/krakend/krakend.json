@@ -1,0 +1,293 @@
+{
+    "$schema": "https://www.krakend.io/schema/v3.json",
+    "version": 3,
+    "endpoints": [
+        {
+            "endpoint": "/v1/documentary",
+            "method": "GET",
+            "extra_config": {
+                "auth/validator": {
+                  "alg": "HS256",
+                  "jwk_url": "http://auth:4500/symmetric.json",
+                  "cache": false,
+                  "disable_jwk_security": true,
+                  "operation_debug": true
+              }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/v1/documents",
+                    "method": "GET",
+                    "host": ["http://documents"],
+                    "is_collection": true,
+                    "mapping": {
+                        "collection": "documents"
+                    }
+                }
+            ]
+        },
+        {
+            "endpoint": "/v1/documentary/{id}",
+            "method": "GET",
+            "backend": [
+                {
+                    "url_pattern": "/v1/documents/{id}",
+                    "method": "GET",
+                    "host": ["http://documents"]
+                }
+            ]
+        },
+        {
+            "endpoint": "/v2/templates",
+            "output_encoding": "no-op",
+            "method": "GET",
+            "backend": [
+                {
+                    "url_pattern": "/v2/templates",
+                    "encoding": "no-op",
+                    "method": "GET",
+                    "host": ["http://templates"],
+                    "is_collection": true,
+                    "mapping": {
+                        "collection": "templates"
+                    }
+                }
+            ]
+        },
+        {
+            "endpoint": "/v2/templates/{id}",
+            "method": "GET",
+            "backend": [
+                {
+                    "url_pattern": "/v2/templates/{id}",
+                    "method": "GET",
+                    "host": ["http://templates"]
+                }
+            ]
+        },
+        {
+            "endpoint": "/v1/data",
+            "method": "GET",
+            "backend": [
+                {
+                    "url_pattern": "/v1/documents",
+                    "method": "GET",
+                    "host": ["http://documents"],
+                    "is_collection": true,
+                    "mapping": {
+                        "collection": "documents"
+                    }
+                },
+                {
+                    "url_pattern": "/v2/templates",
+                    "method": "GET",
+                    "host": ["http://templates"],
+                    "is_collection": true,
+                    "mapping": {
+                        "collection": "templates"
+                    }
+                }
+            ]
+
+        },
+        {
+            "endpoint": "/login_with_signer",
+            "method": "POST",
+            "extra_config": {
+            "security/cors": {
+                "allow_origins": [
+                    "*"
+              ],
+              "allow_methods": [
+                  "GET",
+                  "HEAD",
+                  "POST"
+              ],
+              "expose_headers": [
+                  "Content-Length",
+                  "Content-Type"
+              ],
+              "allow_headers": ["Origin", "Authorization", "Content-Type"],
+              "max_age": "12h",
+              "allow_credentials": false,
+              "debug": false
+          },
+          "auth/signer": {
+            "alg": "HS256",
+            "kid": "sim2",
+            "keys_to_sign": ["access_token", "refresh_token"],
+            "jwk_url": "http://auth:4500/symmetric.json",
+            "disable_jwk_security": true
+        }
+      },
+      "backend": [{
+          "url_pattern": "/api/login",
+          "method": "POST",
+          "host": [
+              "http://auth:4500"
+          ]
+      }]
+  },
+
+      {
+          "endpoint": "/login",
+          "method": "POST",
+          "extra_config": {
+              "security/cors": {
+                  "allow_origins": [
+                      "*"
+                  ],
+                  "allow_methods": [
+                      "GET",
+                      "HEAD",
+                      "POST"
+                  ],
+                  "expose_headers": [
+                      "Content-Length",
+                      "Content-Type"
+                  ],
+                  "allow_headers": ["Origin", "Authorization", "Content-Type"],
+                  "max_age": "12h",
+                  "allow_credentials": false,
+                  "debug": false
+              }
+          },
+          "backend": [{
+              "url_pattern": "/api/login",
+              "method": "POST",
+              "host": [
+                  "http://auth:4500"
+              ]
+          }]
+      },
+      {
+          "endpoint": "/get_token",
+          "method": "POST",
+          "extra_config": {
+              "security/cors": {
+                  "allow_origins": [
+                      "*"
+                  ],
+                  "allow_methods": [
+                      "GET",
+                      "HEAD",
+                      "POST"
+                  ],
+                  "expose_headers": [
+                      "Content-Length",
+                      "Content-Type"
+                  ],
+                  "allow_headers": ["Content-Type"],
+                  "max_age": "12h",
+                  "allow_credentials": false,
+                  "debug": false
+              }
+
+          },
+          "backend": [{
+              "url_pattern": "/api/token",
+              "method": "POST",
+              "host": [
+                  "http://auth:4500"
+              ]
+          }]
+      },
+
+
+
+
+
+
+
+
+
+      {
+          "endpoint": "/posts",
+          "method": "GET",
+          "extra_config": {
+
+              "auth/validator": {
+                  "alg": "HS256",
+                  "jwk_url": "http://192.168.8.103:4500/symmetric.json",
+                  "roles": ["admin","photographer"],
+                  "roles_key": "roles",
+                  "cache": false,
+                  "disable_jwk_security": true,
+                  "operation_debug": true
+              }
+
+          },
+          "concurrent_calls": 1,
+          "input_headers": ["*"],
+          "backend": [{
+              "url_pattern": "/api/posts",
+              "method": "GET",
+              "host": [
+                  "http://auth:4500"
+              ]
+          }]
+      },
+
+
+      {
+          "endpoint": "/validate_token",
+          "method": "GET",
+          "extra_config": {
+              "security/cors": {
+                  "allow_origins": [
+                      "*"
+                  ],
+                  "allow_methods": [
+                      "GET",
+                      "HEAD",
+                      "POST"
+                  ],
+                  "expose_headers": [
+                      "Content-Length",
+                      "Content-Type"
+                  ],
+                  "allow_headers": [
+                      "Accept-Language"
+                  ],
+                  "max_age": "12h",
+                  "allow_credentials": true,
+                  "debug": false
+              },
+
+              "auth/validator": {
+                  "alg": "HS256",
+                  "jwk_url": "http://auth:4500/symmetric.json",
+                  "cache": false,
+                  "disable_jwk_security": true,
+                  "operation_debug": true
+              }
+
+          },
+          "concurrent_calls": 2,
+          "input_headers": ["*"],
+          "backend": [{
+              "url_pattern": "/api/validate_token",
+              "method": "GET",
+              "host": [
+                  "http://auth:4500"
+              ]
+          }]
+      }
+    ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

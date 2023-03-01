@@ -1,0 +1,46 @@
+version: '3.10'
+
+services:
+  documents:
+    image: ms-documents
+    build:
+        context: Documents
+        dockerfile: Dockerfile
+    ports:
+        - "8000:80"
+  auth:
+    image: ms-auth
+    build:
+        context: ./node-auth-app
+        dockerfile: Dockerfile
+    ports:
+        - "4500:4500"
+
+  templates:
+    image: ms-templates
+    build:
+        context: ./Templates
+        dockerfile: Dockerfile
+    ports:
+        - "8001:80"
+
+  krakend_ce:
+      image: devopsfaith/krakend:watch
+      volumes:
+        - ./config/krakend:/etc/krakend
+      ports:
+        - "8080:8080"
+      command: [ "run", "-d", "-c", "/etc/krakend/krakend.json" ]
+      depends_on:
+        - documents
+        - templates
+        - auth
+
+  grafana:
+      image: grafana/grafana:9.1.2
+      ports:
+        - "4000:3000"
+      volumes:
+        - "./config/grafana/datasources/all.yml:/etc/grafana/provisioning/datasources/all.yml"
+        - "./config/grafana/dashboards/all.yml:/etc/grafana/provisioning/dashboards/all.yml"
+        - "./config/grafana/krakend:/var/lib/grafana/dashboards/krakend"
